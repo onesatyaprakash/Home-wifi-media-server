@@ -82,7 +82,7 @@ HTML_TEMPLATE = """
 <body>
 <div class="container">
     <div class="header">
-        <h2>Wi-Fi Media Hub</h2>
+        <h2>Home Wi-Fi Media Hub</h2>
         <div class="storage">Drive: {{ free_gb }} GB Free / {{ total_gb }} GB Total</div>
     </div>
     
