@@ -14,10 +14,10 @@ A lightweight, secure, and modern local file-sharing server built with Python, F
 ## Installation
 1. Clone the repository:
 ```bash
-git clone [https://github.com/onesatyaprakash/Home-wifi-media-server.git](https://github.com/onesatyaprakash/Home-wifi-media-server.git)
+git clone [https://github.com/onesatyaprakash/Home-wifi-media-server.git
 cd Home-wifi-media-server
 
-```
+```bash
 2. Install the required dependencies:
 pip install -r requirements.txt
 
