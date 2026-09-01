@@ -46,44 +46,47 @@ def requires_auth(f):
 # HTML Template remains exactly as you designed it
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Home Wifi Media File Server</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Fi Media Hub</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; flex-wrap: wrap; gap: 10px;}
-        .storage { font-size: 0.9em; color: #555; background: #e4e6eb; padding: 5px 10px; border-radius: 4px; }
-        .upload-section { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
-        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; transition: transform 0.2s; display: flex; flex-direction: column; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .card-img { width: 100%; height: 140px; object-fit: cover; background: #fafafa; border-bottom: 1px solid #eee; }
-        .card-icon { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 4em; background: #fafafa; border-bottom: 1px solid #eee; }
-        .card-body { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .card-title { font-size: 0.85em; color: #333; word-break: break-all; margin-bottom: 10px; }
-        .btn { display: inline-block; padding: 8px; background: #007bff; color: #fff; text-decoration: none; border-radius: 4px; font-size: 0.8em; }
-        .btn:hover { background: #0056b3; }
-        input[type="file"] { border: 1px solid #ccc; padding: 5px; border-radius: 4px; }
-        button { padding: 8px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #218838; }
-        .error-msg { color: red; margin-bottom: 10px; font-weight: bold; }
+        :root { --bg: #f8fafc; --surface: #ffffff; --primary: #6366f1; --primary-hover: #4f46e5; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --radius: 12px; --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); --shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 20px; line-height: 1.5; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        .header { background: var(--surface); padding: 20px 24px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border: 1px solid var(--border); }
+        .header h2 { margin: 0; font-size: 1.5rem; font-weight: 600; color: var(--text-main); letter-spacing: -0.025em; }
+        .storage { font-size: 0.875rem; font-weight: 500; color: var(--primary); background: #e0e7ff; padding: 6px 12px; border-radius: 9999px; }
+        .upload-section { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .upload-form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        input[type="file"] { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; cursor: pointer; color: var(--text-muted); font-size: 0.875rem; transition: border-color 0.2s; }
+        input[type="file"]:hover { border-color: var(--primary); }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem; }
+        button:hover { background: var(--primary-hover); }
+        .error-msg { background: #fee2e2; color: #dc2626; padding: 12px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; border: 1px solid #fecaca; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; }
+        .card { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: all 0.2s ease; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: #cbd5e1; }
+        .card-img, .card-icon { width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid var(--border); }
+        .card-icon { display: flex; align-items: center; justify-content: center; font-size: 3rem; background: #f1f5f9; color: #94a3b8; }
+        .card-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
+        .card-title { font-size: 0.875rem; font-weight: 500; color: var(--text-main); word-break: break-all; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 8px 0; background: #f1f5f9; color: var(--text-main); text-decoration: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; box-sizing: border-box; }
+        .btn:hover { background: #e2e8f0; color: var(--primary); }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h2 style="margin: 0;">Wi-Fi Media Gallery</h2>
+        <h2>Wi-Fi Media Hub</h2>
         <div class="storage">Drive: {{ free_gb }} GB Free / {{ total_gb }} GB Total</div>
     </div>
-    
     {% if error %}
     <div class="error-msg">{{ error }}</div>
     {% endif %}
-
     <div class="upload-section">
-        <form method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <form method="POST" class="upload-form" enctype="multipart/form-data">
             <input type="file" name="file" required>
             <button type="submit">Upload File</button>
         </form>
@@ -97,7 +100,7 @@ HTML_TEMPLATE = """
             <div class="card-icon">📄</div>
             {% endif %}
             <div class="card-body">
-                <div class="card-title">{{ file.name }}</div>
+                <p class="card-title">{{ file.name }}</p>
                 <a href="/download/{{ file.name }}" class="btn" download>Download</a>
             </div>
         </div>
