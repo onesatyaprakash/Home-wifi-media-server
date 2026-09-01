@@ -18,7 +18,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Hard limits and security constraints
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB max upload size
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'mp3', 'zip', 'rar'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'webm', 'mp3', 'wav', 'zip'}
 
 # Fetch credentials securely
 USERNAME = os.getenv("APP_USERNAME", "default_admin")
@@ -43,7 +43,6 @@ def requires_auth(f):
     decorated.__name__ = f.__name__
     return decorated
 
-# HTML Template remains exactly as you designed it
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -52,7 +51,7 @@ HTML_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wi-Fi Media Hub</title>
     <style>
-        :root { --bg: #f8fafc; --surface: #ffffff; --primary: #6366f1; --primary-hover: #4f46e5; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --radius: 12px; --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); --shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        :root { --bg: #f8fafc; --surface: #ffffff; --primary: #6366f1; --primary-hover: #4f46e5; --secondary: #f1f5f9; --secondary-hover: #e2e8f0; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --radius: 12px; --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); --shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 20px; line-height: 1.5; }
         .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
         .header { background: var(--surface); padding: 20px 24px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border: 1px solid var(--border); }
@@ -65,15 +64,19 @@ HTML_TEMPLATE = """
         button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem; }
         button:hover { background: var(--primary-hover); }
         .error-msg { background: #fee2e2; color: #dc2626; padding: 12px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; border: 1px solid #fecaca; }
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
         .card { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: all 0.2s ease; border: 1px solid var(--border); display: flex; flex-direction: column; }
         .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: #cbd5e1; }
         .card-img, .card-icon { width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid var(--border); }
-        .card-icon { display: flex; align-items: center; justify-content: center; font-size: 3rem; background: #f1f5f9; color: #94a3b8; }
-        .card-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
+        .card-icon { display: flex; align-items: center; justify-content: center; font-size: 3.5rem; background: #f1f5f9; color: #94a3b8; }
+        .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; flex-grow: 1; }
         .card-title { font-size: 0.875rem; font-weight: 500; color: var(--text-main); word-break: break-all; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 8px 0; background: #f1f5f9; color: var(--text-main); text-decoration: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; box-sizing: border-box; }
-        .btn:hover { background: #e2e8f0; color: var(--primary); }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 8px 0; text-decoration: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; box-sizing: border-box; border: 1px solid transparent; }
+        .btn-view { background: var(--primary); color: white; }
+        .btn-view:hover { background: var(--primary-hover); }
+        .btn-download { background: var(--secondary); color: var(--text-main); border-color: var(--border); }
+        .btn-download:hover { background: var(--secondary-hover); }
     </style>
 </head>
 <body>
@@ -82,26 +85,37 @@ HTML_TEMPLATE = """
         <h2>Wi-Fi Media Hub</h2>
         <div class="storage">Drive: {{ free_gb }} GB Free / {{ total_gb }} GB Total</div>
     </div>
+    
     {% if error %}
     <div class="error-msg">{{ error }}</div>
     {% endif %}
+
     <div class="upload-section">
         <form method="POST" class="upload-form" enctype="multipart/form-data">
             <input type="file" name="file" required>
             <button type="submit">Upload File</button>
         </form>
     </div>
+    
     <div class="gallery">
         {% for file in files %}
         <div class="card">
             {% if file.is_image %}
-            <img src="/download/{{ file.name }}" class="card-img" loading="lazy" alt="{{ file.name }}">
+                <img src="/file/{{ file.name }}" class="card-img" loading="lazy" alt="{{ file.name }}">
+            {% elif file.is_video %}
+                <div class="card-icon">🎬</div>
+            {% elif file.is_audio %}
+                <div class="card-icon">🎵</div>
             {% else %}
-            <div class="card-icon">📄</div>
+                <div class="card-icon">📄</div>
             {% endif %}
+            
             <div class="card-body">
                 <p class="card-title">{{ file.name }}</p>
-                <a href="/download/{{ file.name }}" class="btn" download>Download</a>
+                <div class="button-group">
+                    <a href="/file/{{ file.name }}" target="_blank" class="btn btn-view">Play / View</a>
+                    <a href="/file/{{ file.name }}" download class="btn btn-download">Download</a>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -128,17 +142,27 @@ def index():
     files = []
     for f in os.listdir(app.config['UPLOAD_FOLDER']):
         if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f)):
-            is_img = f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
-            files.append({'name': f, 'is_image': is_img})
+            ext = f.rsplit('.', 1)[-1].lower() if '.' in f else ''
+            is_img = ext in ['png', 'jpg', 'jpeg', 'gif', 'webp']
+            is_vid = ext in ['mp4', 'webm']
+            is_aud = ext in ['mp3', 'wav']
+            
+            files.append({
+                'name': f, 
+                'is_image': is_img,
+                'is_video': is_vid,
+                'is_audio': is_aud
+            })
             
     total, used, free = shutil.disk_usage("/")
     free_gb = round(free / (1024 ** 3), 2)
     total_gb = round(total / (1024 ** 3), 2)
     return render_template_string(HTML_TEMPLATE, files=files, free_gb=free_gb, total_gb=total_gb, error=error_msg)
 
-@app.route('/download/<filename>')
+@app.route('/file/<filename>')
 @requires_auth
-def download(filename):
+def serve_file(filename):
+    # send_from_directory handles standard range requests for streaming video/audio natively
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
@@ -154,5 +178,4 @@ if __name__ == '__main__':
     print(f"⚙️  Server Backend: Waitress (Production Mode)")
     print("="*50)
     
-    # Replaced app.run with waitress
     serve(app, host='0.0.0.0', port=port)
