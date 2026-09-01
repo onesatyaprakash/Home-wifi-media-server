@@ -17,19 +17,15 @@ A lightweight, secure, and modern local file-sharing server built with Python, F
 git clone [https://github.com/onesatyaprakash/Home-wifi-media-server.git
 cd Home-wifi-media-server
 
-```bash
 2. Install the required dependencies:
 pip install -r requirements.txt
 
-```
 3. Password Configuration:
 APP_USERNAME=your_custom_username
 APP_PASSWORD=your_secure_password
 
-```
 4. Start the server by running the application:
 python app.py
 
-```
 5 Access your server
 IP address http://192.168.x.x:8000
